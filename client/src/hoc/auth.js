@@ -1,39 +1,48 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { auth } from '../_actions/user_actions';
-import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from 'react-router-dom';
 
-export default function (ComposedClass, reload, adminRoute = null) {
-    function AuthenticationCheck(props) {
 
-        let user = useSelector(state => state.user);
+const Auth = (SpecificComponent, option, adminRoute = null) => {
+
+    function AuthenticaitonCheck(props) {
         const dispatch = useDispatch();
+        const navigate = useNavigate();
 
         useEffect(() => {
+            dispatch(auth()).then(res => {
+                console.log(res);
 
-            dispatch(auth()).then(response => {
-                if (!response.payload.isAuth) {
-                    if (reload) {
-                        props.history.push('/login')
+                if (!res.payload.isAuth) {
+                    //1.로그인 하지 않은 상태
+                    console.log("1.로그인 하지 않은 상태");
+
+                    if (option) {
+                        navigate("/login")
                     }
+
                 } else {
-                    if (adminRoute && !response.payload.isAdmin) {
-                        props.history.push('/')
-                    }
-                    else {
-                        if (reload === false) {
-                            props.history.push('/')
-                        }
+                    //2.로그인 한 상태
+                    console.log("2.로그인 하지 않은 상태");
+
+                    if (adminRoute && !res.payload.isAdmin) {
+                        navigate("/");
+                    } else {
+                        if (option === false)
+                            navigate("/");
                     }
                 }
+
+
             })
-            
-        }, [])
 
-        return (
-            <ComposedClass {...props} user={user} />
-        )
+        }, []);
+
+        return <SpecificComponent />
     }
-    return AuthenticationCheck
-}
 
+    return AuthenticaitonCheck;
+};
+
+export default Auth;
